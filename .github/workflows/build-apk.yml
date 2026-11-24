@@ -1,0 +1,28 @@
+name: Build APK
+on: workflow_dispatch
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: love2d/love-android
+          submodules: recursive
+          path: love-android
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Embed game
+        run: |
+          mkdir -p love-android/app/src/embed/assets
+          cp game.love love-android/app/src/embed/assets/game.love
+          sed -i 's/^app.name=.*/app.name=Mari0 CE/' love-android/gradle.properties
+      - name: Build
+        working-directory: love-android
+        run: bash ./gradlew assembleEmbedNoRecordDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mari0-ce-apk
+          path: love-android/app/build/outputs/apk/embedNoRecord/debug/*.apk
